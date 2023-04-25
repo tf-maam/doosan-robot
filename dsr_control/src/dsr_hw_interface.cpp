@@ -1127,7 +1127,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, NUM_JOINT> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.servoj(target_pos.data(), target_vel.data(), target_acc.data(), time);
     }
@@ -1140,7 +1140,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, 2> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.servol(target_pos.data(), target_vel.data(), target_acc.data(), time);
     }
@@ -1151,7 +1151,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, NUM_JOINT> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.speedj(target_vel.data(), target_acc.data(), time);
     }
@@ -1162,7 +1162,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, 2> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.speedl(target_vel.data(), target_acc.data(), time);
     }
@@ -1175,7 +1175,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, NUM_JOINT> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.servoj_rt(target_pos.data(), target_vel.data(), target_acc.data(), time);
     }
@@ -1188,7 +1188,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, NUM_TASK> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.servol_rt(target_pos.data(), target_vel.data(), target_acc.data(), time);
     }
@@ -1199,7 +1199,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, NUM_JOINT> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.speedj_rt(target_vel.data(), target_acc.data(), time);
     }
@@ -1210,7 +1210,7 @@ namespace dsr_control{
         std::copy(msg->vel.cbegin(), msg->vel.cend(), target_vel.begin());
         std::array<float, NUM_TASK> target_acc;
         std::copy(msg->acc.cbegin(), msg->acc.cend(), target_acc.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.speedl_rt(target_vel.data(), target_acc.data(), time);
     }
@@ -1219,7 +1219,7 @@ namespace dsr_control{
         
         std::array<float, NUM_TASK> tor;
         std::copy(msg->tor.cbegin(), msg->tor.cend(), tor.begin());
-        int time = msg->time;
+        float time = msg->time;
 
         Drfl.torque_rt(tor.data(), time);
     }
@@ -3043,14 +3043,23 @@ namespace dsr_control{
     {
         res.success = false;
         res.success = Drfl.start_rt_control();
-        return true;
+        if(!res.success) {
+            return false;
+        }
+        res.success = Drfl.set_safety_mode(SAFETY_MODE_AUTONOMOUS,
+                                 SAFETY_MODE_EVENT_MOVE);
+        return res.success;
     }
 
     bool DRHWInterface::stop_rt_control_cb(dsr_msgs::StopRTControl::Request& req, dsr_msgs::StopRTControl::Response& res)
     {
         res.success = false;
         res.success = Drfl.stop_rt_control();
-        return true;
+        if(!res.success) {
+            return false;
+        }
+        res.success = Drfl.set_safety_mode(SAFETY_MODE_AUTONOMOUS, SAFETY_MODE_EVENT_STOP);
+        return res.success;
     }
     
     bool DRHWInterface::set_velj_rt_cb(dsr_msgs::SetVelJRT::Request& req, dsr_msgs::SetVelJRT::Response& res)
